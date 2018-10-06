@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cp="src:test/cljs:test/cljc:$(clojure -Spath)"
+
+lumo -K -c "$cp" -m sieppari.lumo-runner
