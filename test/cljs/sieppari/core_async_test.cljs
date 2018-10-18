@@ -35,7 +35,8 @@
 (defn fail! [& _]
       (throw (ex-info "Should never be called" {})))
 
-(deftest promisa-happy-sync-test
+
+(deftest chan-happy-sync-test
   (async done
          (let [log (atom [])]
               (-> [(make-logging-interceptor log :a)
@@ -56,17 +57,15 @@
                                   (done))
                               fail!)))))
 
-(deftest promesa-happy-async-test
+(deftest chan-happy-async-test
   (async done
          (let [log (atom [])]
               (-> [(make-async-logging-interceptor log :a)
-                   ;;(make-async-logging-interceptor log :b)
-                   ;;(make-async-logging-interceptor log :c)
+                   (make-async-logging-interceptor log :b)
+                   (make-async-logging-interceptor log :c)
                    (make-logging-handler log)]
                    (sc/execute request
-                              (fn [res] (js/console.log "res:" res))
-                               #_(fn [response]
-                                  (js/console.log "response:" response)
+                               (fn [response]
                                   (is (= @log
                                          [[:enter :a]
                                           [:enter :b]
@@ -78,144 +77,124 @@
                                   (is (= response request))
                                   (done))
                               fail!)))))
-;;
-;;(deftest promesa-async-b-sync-execute-test
-;;  (async done
-;;         (let [log (atom [])]
-;;              (-> [(make-logging-interceptor log :a)
-;;                   (make-async-logging-interceptor log :b)
-;;                   (make-logging-interceptor log :c)
-;;                   (make-logging-handler log)]
-;;                  (sc/execute request
-;;                              (fn [response]
-;;                                  (is (= @log
-;;                                         [[:enter :a]
-;;                                          [:enter :b]
-;;                                          [:enter :c]
-;;                                          [:handler]
-;;                                          [:leave :c]
-;;                                          [:leave :b]
-;;                                          [:leave :a]]))
-;;                                  (is (= response request))
-;;                                  (done))
-;;                              fail!)))))
-;;
-;;(deftest promesa-async-handler-test
-;;  (async done
-;;         (let [log (atom [])]
-;;              (-> [(make-logging-interceptor log :a)
-;;                   (make-logging-interceptor log :b)
-;;                   (make-logging-interceptor log :c)
-;;                   (make-async-logging-handler log)]
-;;                  (sc/execute request
-;;                              (fn [response]
-;;                                  (is (= @log
-;;                                         [[:enter :a]
-;;                                          [:enter :b]
-;;                                          [:enter :c]
-;;                                          [:handler]
-;;                                          [:leave :c]
-;;                                          [:leave :b]
-;;                                          [:leave :a]]))
-;;                                  (is (= response request))
-;;                                  (done))
-;;                              fail!)))))
-;;
-;;(deftest promesa-async-stack-async-execute-test
-;;  (async done
-;;         (let [log (atom [])]
-;;              (-> [(make-logging-interceptor log :a)
-;;                   (make-logging-interceptor log :b)
-;;                   (make-logging-interceptor log :c)
-;;                   (make-async-logging-handler log)]
-;;                  (sc/execute request
-;;                              (fn [response]
-;;                                  (is (= @log
-;;                                         [[:enter :a]
-;;                                          [:enter :b]
-;;                                          [:enter :c]
-;;                                          [:handler]
-;;                                          [:leave :c]
-;;                                          [:leave :b]
-;;                                          [:leave :a]]))
-;;                                  (is (= response request))
-;;                                  (done))
-;;                              fail!)))))
-;;
-;;(deftest promesa-async-execute-with-handler-throws-test
-;;  (async done
-;;         (let [log (atom [])]
-;;              (-> [(make-logging-interceptor log :a)
-;;                   (make-logging-interceptor log :b)
-;;                   (make-logging-interceptor log :c)
-;;                   (fn [_]
-;;                       (swap! log conj [:handler])
-;;                       (throw error))]
-;;                  (sc/execute request
-;;                              fail!
-;;                              (fn [response]
-;;                                  (is (= @log
-;;                                         [[:enter :a]
-;;                                          [:enter :b]
-;;                                          [:enter :c]
-;;                                          [:handler]
-;;                                          [:error :c]
-;;                                          [:error :b]
-;;                                          [:error :a]]))
-;;                                  (is (= response error))
-;;                                  (done)))))))
-;;
-;;(deftest promesa-async-failing-handler-test
-;;  (async done
-;;         (let [log (atom [])]
-;;              (-> [(make-logging-interceptor log :a)
-;;                   (make-logging-interceptor log :b)
-;;                   (make-logging-interceptor log :c)
-;;                   (fn [_]
-;;                       (swap! log conj [:handler])
-;;                       (p/resolved error))]
-;;                  (sc/execute request
-;;                              fail!
-;;                              (fn [response]
-;;                                  (is (= @log
-;;                                         [[:enter :a]
-;;                                          [:enter :b]
-;;                                          [:enter :c]
-;;                                          [:handler]
-;;                                          [:error :c]
-;;                                          [:error :b]
-;;                                          [:error :a]]))
-;;                                  (is (= response error))
-;;                                  (done)))))))
-;;
-;;(deftest promesa-async-failing-handler-b-fixes-test
-;;  (let [make-fixing-error-b (fn [log]
-;;                                (-> (make-async-logging-interceptor log :b)
-;;                                    (assoc :error (fn [ctx]
-;;                                                      (swap! log conj [:error :b])
-;;                                                      (p/resolved
-;;                                                        (-> ctx
-;;                                                            (assoc :error nil)
-;;                                                            (assoc :response :fixed-by-b)))))))]
-;;       (async done
-;;              (let [log (atom [])]
-;;                   (-> [(make-logging-interceptor log :a)
-;;                        (make-fixing-error-b log)
-;;                        (make-logging-interceptor log :c)
-;;                        (fn [_]
-;;                            (swap! log conj [:handler])
-;;                            (p/resolved error))]
-;;
-;;                       (sc/execute request
-;;                                   (fn [response]
-;;                                       (is (= @log
-;;                                              [[:enter :a]
-;;                                               [:enter :b]
-;;                                               [:enter :c]
-;;                                               [:handler]
-;;                                               [:error :c]
-;;                                               [:error :b]
-;;                                               [:leave :a]]))
-;;                                       (is (= response :fixed-by-b))
-;;                                       (done))
-;;                                   fail!))))))
+
+(deftest chan-async-b-sync-execute-test
+  (async done
+         (let [log (atom [])]
+              (-> [(make-logging-interceptor log :a)
+                   (make-async-logging-interceptor log :b)
+                   (make-logging-interceptor log :c)
+                   (make-logging-handler log)]
+                  (sc/execute request
+                              (fn [response]
+                                  (is (= @log
+                                         [[:enter :a]
+                                          [:enter :b]
+                                          [:enter :c]
+                                          [:handler]
+                                          [:leave :c]
+                                          [:leave :b]
+                                          [:leave :a]]))
+                                  (is (= response request))
+                                  (done))
+                              fail!)))))
+
+(deftest chan-async-handler-test
+  (async done
+         (let [log (atom [])]
+              (-> [(make-logging-interceptor log :a)
+                   (make-logging-interceptor log :b)
+                   (make-logging-interceptor log :c)
+                   (make-async-logging-handler log)]
+                  (sc/execute request
+                              (fn [response]
+                                  (is (= @log
+                                         [[:enter :a]
+                                          [:enter :b]
+                                          [:enter :c]
+                                          [:handler]
+                                          [:leave :c]
+                                          [:leave :b]
+                                          [:leave :a]]))
+                                  (is (= response request))
+                                  (done))
+                              fail!)))))
+
+
+(deftest chan-async-execute-with-handler-throws-test
+  (async done
+         (let [log (atom [])]
+              (-> [(make-logging-interceptor log :a)
+                   (make-logging-interceptor log :b)
+                   (make-logging-interceptor log :c)
+                   (fn [_]
+                       (swap! log conj [:handler])
+                       (throw error))]
+                  (sc/execute request
+                              fail!
+                              (fn [response]
+                                  (is (= @log
+                                         [[:enter :a]
+                                          [:enter :b]
+                                          [:enter :c]
+                                          [:handler]
+                                          [:error :c]
+                                          [:error :b]
+                                          [:error :a]]))
+                                  (is (= response error))
+                                  (done)))))))
+
+(deftest chan-async-failing-handler-test
+  (async done
+         (let [log (atom [])]
+              (-> [(make-logging-interceptor log :a)
+                   (make-logging-interceptor log :b)
+                   (make-logging-interceptor log :c)
+                   (fn [_]
+                       (swap! log conj [:handler])
+                       (go error))]
+                  (sc/execute request
+                              fail!
+                              (fn [response]
+                                  (is (= @log
+                                         [[:enter :a]
+                                          [:enter :b]
+                                          [:enter :c]
+                                          [:handler]
+                                          [:error :c]
+                                          [:error :b]
+                                          [:error :a]]))
+                                  (is (= response error))
+                                  (done)))))))
+
+(deftest chan-async-failing-handler-b-fixes-test
+  (let [make-fixing-error-b (fn [log]
+                                (-> (make-async-logging-interceptor log :b)
+                                    (assoc :error (fn [ctx]
+                                                      (swap! log conj [:error :b])
+                                                      (go
+                                                        (-> ctx
+                                                            (assoc :error nil)
+                                                            (assoc :response :fixed-by-b)))))))]
+       (async done
+              (let [log (atom [])]
+                   (-> [(make-logging-interceptor log :a)
+                        (make-fixing-error-b log)
+                        (make-logging-interceptor log :c)
+                        (fn [_]
+                            (swap! log conj [:handler])
+                            (go error))]
+
+                       (sc/execute request
+                                   (fn [response]
+                                       (is (= @log
+                                              [[:enter :a]
+                                               [:enter :b]
+                                               [:enter :c]
+                                               [:handler]
+                                               [:error :c]
+                                               [:error :b]
+                                               [:leave :a]]))
+                                       (is (= response :fixed-by-b))
+                                       (done))
+                                   fail!))))))
