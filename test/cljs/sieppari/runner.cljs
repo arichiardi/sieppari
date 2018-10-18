@@ -4,8 +4,10 @@
             sieppari.context-test
             sieppari.core-execute-test
             sieppari.promesa-test
+            sieppari.async.promesa-test
             sieppari.native-promise-test
-            sieppari.core-async-test))
+            sieppari.core-async-test
+            sieppari.async.core-async-test))
 
 ;; From https://figwheel.org/docs/testing.html
 
