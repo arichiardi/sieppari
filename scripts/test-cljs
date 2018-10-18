@@ -3,5 +3,5 @@
 set -euo pipefail
 
 clojure -A:fig:test-cljs -m figwheel.main \
-  -co dev.cljs.edn:node.cljs.edn \
+  -co dev.cljs.edn \
   -m sieppari.runner \

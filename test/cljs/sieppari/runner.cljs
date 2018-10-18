@@ -4,13 +4,8 @@
             sieppari.context-test
             sieppari.core-execute-test
             sieppari.promesa-test
-    sieppari.core-async-test
-            ;; cannot test promesa and native together so we test here promesa
-            ;; and in self-host the native counterpart
             sieppari.native-promise-test
-            ))
-
-(enable-console-print!)
+            sieppari.core-async-test))
 
 ;; From https://figwheel.org/docs/testing.html
 

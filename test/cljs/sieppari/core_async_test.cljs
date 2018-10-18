@@ -2,9 +2,7 @@
   (:require [clojure.test :as test :refer-macros [deftest is async]]
             [clojure.core.async :as cca :refer-macros [go]]
             [sieppari.core :as sc]
-            [promesa.core :as p]
-            [sieppari.async.core-async :as scc]
-            ))
+            [sieppari.async.core-async :as scc]))
 
 (defn make-logging-interceptor [log name]
       {:name name
