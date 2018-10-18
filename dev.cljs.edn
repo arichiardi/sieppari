@@ -1,4 +1,5 @@
 {:main sieppari.core
+ :target :nodejs
  :optimizations :none
  :output-dir ".cljs"
  :output-to ".cljs/sieppari.js"
