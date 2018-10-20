@@ -10,7 +10,9 @@
   (instance? #?(:clj Exception :cljs js/Error) e))
 
 (defn- set-result [ctx response]
-  (if (and (some? response) (a/async? response))
+  (if (and (some? response)
+           (satisfies? a/AsyncContext response)
+           (a/async? response))
     (a/continue response (partial set-result ctx))
     (assoc ctx
            (if (exception? response) :error :response)

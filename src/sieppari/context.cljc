@@ -1,5 +1,6 @@
 (ns sieppari.context
-  (:require [sieppari.queue :as q])
+  (:require [sieppari.queue :as q]
+            [sieppari.async :as a])
   #?(:clj
      (:import (clojure.lang PersistentQueue))))
 

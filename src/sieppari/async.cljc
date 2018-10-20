@@ -8,11 +8,6 @@
 
 #?(:clj
    (extend-protocol AsyncContext
-     Object
-     (async? [_] false)
-     (continue [t f] (f t))
-     (await [t] t)
-
      clojure.lang.IDeref
      (async? [_] true)
      (continue [c f] (let [p (promise)]
@@ -22,22 +17,6 @@
 
 #?(:cljs
    (extend-protocol AsyncContext
-     object
-     (async? [_] false)
-     (continue [t f] (f t))
-
-     number
-     (async? [_] false)
-     (continue [t f] (f t))
-
-     string
-     (async? [_] false)
-     (continue [t f] (f t))
-
-     array
-     (async? [_] false)
-     (continue [t f] (f t))
-
      js/Promise
      (async? [_] true)
      (continue [t f] (.then t f))))

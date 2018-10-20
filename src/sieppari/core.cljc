@@ -6,7 +6,11 @@
                :cljs [goog.iter :as iter]))
   #?(:clj (:import (java.util Iterator))))
 
-(defrecord Context [request response error queue stack on-complete on-error])
+(defrecord Context [request response error queue stack on-complete on-error]
+  a/AsyncContext
+  (async? [_] false)
+  (continue [t f] (f t))
+  #?(:clj (await [t] t)))
 
 (defn- try-f [ctx f]
   (if f
@@ -17,7 +21,7 @@
     ctx))
 
 (defn- leave [ctx]
-  (if (a/async? ctx)
+  (if (and (satisfies? a/AsyncContext ctx) (a/async? ctx))
     (a/continue ctx leave)
     (let [it (:stack ctx)]
       (if (.hasNext it)
@@ -31,7 +35,7 @@
      :cljs (cljs.core/iter v)))
 
 (defn- enter [ctx]
-  (if (a/async? ctx)
+  (if (and (satisfies? a/AsyncContext ctx) (a/async? ctx))
     (a/continue ctx enter)
     (let [queue (:queue ctx)
           stack (:stack ctx)
@@ -47,14 +51,14 @@
 
 #?(:clj
    (defn- await-result [ctx]
-     (if (a/async? ctx)
+     (if (and (satisfies? a/AsyncContext ctx) (a/async? ctx))
        (recur (a/await ctx))
        (if-let [error (:error ctx)]
          (throw error)
          (:response ctx)))))
 
 (defn- deliver-result [ctx]
-  (if (a/async? ctx)
+  (if (and (satisfies? a/AsyncContext ctx) (a/async? ctx))
     (a/continue ctx deliver-result)
     (let [error (:error ctx)
           result (or error (:response ctx))
